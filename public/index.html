@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoCare - Solusi Cerdas Kendaraan Anda</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+            scroll-behavior: smooth;
+        }
+        /* Gradient Merah */
+        .gradient-text {
+            background: linear-gradient(to right, #ef4444, #f87171);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Tab Aktif Merah */
+        .active-tab {
+            background-color: #dc2626 !important; /* red-600 */
+            color: white !important;
+            border-bottom: 2px solid #ef4444; /* red-500 */
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        .chat-bubble {
+            max-width: 80%;
+        }
+        /* Bubble Chat Pengguna Merah */
+        .chat-bubble.user {
+            background-color: #dc2626; /* red-600 */
+            color: white;
+            align-self: flex-end;
+        }
+        .chat-bubble.ai {
+            background-color: #374151; /* bg-gray-700 */
+            color: #d1d5db; /* text-gray-300 */
+            align-self: flex-start;
+        }
+        /* Custom scrollbar */
+        #chat-window::-webkit-scrollbar, #workshop-results::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat-window::-webkit-scrollbar-track, #workshop-results::-webkit-scrollbar-track {
+            background: #1f2937; /* bg-gray-800 */
+        }
+        #chat-window::-webkit-scrollbar-thumb, #workshop-results::-webkit-scrollbar-thumb {
+            background: #4b5563; /* bg-gray-600 */
+            border-radius: 3px;
+        }
+        #chat-window::-webkit-scrollbar-thumb:hover, #workshop-results::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* bg-gray-500 */
+        }
+        /* Spinner Merah */
+        .spinner {
+            border-top-color: #ef4444; /* red-500 */
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Map container style */
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 0.75rem; /* rounded-lg */
+            background-color: #374151; /* bg-gray-700 */
+        }
+        /* Hero background pattern */
+        .hero-bg {
+            background-color: #111827;
+            background-image: radial-gradient(circle at 1px 1px, #374151 1px, transparent 0);
+            background-size: 20px 20px;
+            position: relative;
+        }
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(17, 24, 39, 0) 0%, #111827 80%);
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <!-- Auth Page -->
+    <div id="auth-page">
+        <div class="min-h-screen flex items-center justify-center hero-bg p-4">
+            <div class="w-full max-w-md p-8 space-y-8 bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-2xl z-10">
+                <!-- Sign In Form -->
+                <div id="signin-form-container">
+                    <div class="text-center">
+                        <h1 class="text-3xl font-bold text-white">Selamat Datang di <span class="gradient-text">AutoCare</span></h1>
+                        <p class="mt-2 text-gray-400">Masuk untuk melanjutkan</p>
+                    </div>
+                    <form id="signin-form" class="mt-8 space-y-6">
+                        <div class="rounded-md shadow-sm -space-y-px">
+                            <div>
+                                <input id="signin-email" name="email" type="email" autocomplete="email" required class="appearance-none rounded-t-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 text-white focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm" placeholder="Alamat email">
+                            </div>
+                            <div>
+                                <input id="signin-password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-b-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 text-white focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm" placeholder="Password">
+                            </div>
+                        </div>
+                        <div>
+                            <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-red-500">
+                                Sign In
+                            </button>
+                        </div>
+                    </form>
+                    <p class="mt-4 text-center text-sm text-gray-400">
+                        Belum punya akun?
+                        <button id="show-signup" class="font-medium text-red-400 hover:text-red-300">
+                            Sign up di sini
+                        </button>
+                    </p>
+                </div>
+                
+                <!-- Sign Up Form -->
+                <div id="signup-form-container" class="hidden">
+                    <div class="text-center">
+                        <h1 class="text-3xl font-bold text-white">Buat Akun <span class="gradient-text">AutoCare</span></h1>
+                        <p class="mt-2 text-gray-400">Daftar untuk mendapatkan semua fitur</p>
+                    </div>
+                    <form id="signup-form" class="mt-8 space-y-6">
+                         <div class="rounded-md shadow-sm -space-y-px">
+                            <div>
+                                <input id="signup-name" name="name" type="text" autocomplete="name" required class="appearance-none rounded-t-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 text-white focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm" placeholder="Nama Lengkap">
+                            </div>
+                            <div>
+                                <input id="signup-email" name="email" type="email" autocomplete="email" required class="appearance-none relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 text-white focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm" placeholder="Alamat email">
+                            </div>
+                            <div>
+                                <input id="signup-password" name="password" type="password" autocomplete="new-password" required class="appearance-none rounded-b-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 text-white focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm" placeholder="Password (minimal 6 karakter)">
+                            </div>
+                        </div>
+                        <div>
+                            <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-red-500">
+                                Sign Up
+                            </button>
+                        </div>
+                    </form>
+                    <p class="mt-4 text-center text-sm text-gray-400">
+                        Sudah punya akun?
+                        <button id="show-signin" class="font-medium text-red-400 hover:text-red-300">
+                            Sign in di sini
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main App Wrapper (hidden by default) -->
+    <div id="app-wrapper" class="hidden">
+        <!-- Header / Navbar -->
+        <header class="bg-gray-900/80 backdrop-blur-sm fixed w-full top-0 z-50 shadow-lg shadow-black/20">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <a href="#" class="text-2xl font-bold text-white">
+                    <i class="fas fa-motorcycle mr-2 text-red-500"></i>Auto<span class="text-red-500">Care</span>
+                </a>
+                <nav class="hidden md:flex space-x-8 items-center">
+                    <a href="#hero" class="hover:text-red-400 transition">Beranda</a>
+                    <a href="#fitur" class="hover:text-red-400 transition">Fitur</a>
+                    <a href="#layanan" class="hover:text-red-400 transition">Layanan</a>
+                    <a href="#kontak" class="hover:text-red-400 transition">Kontak</a>
+                </nav>
+                 <div class="hidden md:flex items-center space-x-4">
+                    <span id="user-profile-display" class="text-sm text-gray-300"></span>
+                    <button id="signout-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition shadow-md">
+                        Sign Out
+                    </button>
+                </div>
+                <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden bg-gray-800">
+                <a href="#hero" class="block py-2 px-4 text-sm hover:bg-gray-700">Beranda</a>
+                <a href="#fitur" class="block py-2 px-4 text-sm hover:bg-gray-700">Fitur</a>
+                <a href="#layanan" class="block py-2 px-4 text-sm hover:bg-gray-700">Layanan</a>
+                <a href="#kontak" class="block py-2 px-4 text-sm hover:bg-gray-700">Kontak</a>
+                 <a href="#" id="signout-btn-mobile" class="block py-2 px-4 text-sm hover:bg-gray-700 text-red-400 font-semibold">Sign Out</a>
+            </div>
+        </header>
+
+        <main>
+             <div id="main-content">
+                <!-- Hero Section -->
+                <section id="hero" class="pt-24 min-h-screen flex items-center hero-bg">
+                    <div class="container mx-auto px-6 z-10">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div class="text-center md:text-left">
+                                <h1 class="text-4xl lg:text-6xl font-bold text-white mb-4 leading-tight">
+                                    Asisten Cerdas untuk <span class="gradient-text">Perawatan Motor</span> Anda
+                                </h1>
+                                <p class="text-lg text-gray-400 mb-8 max-w-2xl mx-auto md:mx-0">
+                                    AutoCare memberikan analisis masalah, pengingat servis, hingga rekomendasi bengkel terdekat. Semua dalam satu platform cerdas.
+                                </p>
+                                <a href="#layanan" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-transform transform hover:scale-105 shadow-lg text-lg">
+                                    Coba Fitur Kami <i class="fas fa-arrow-right ml-2"></i>
+                                </a>
+                            </div>
+                            <div class="hidden md:flex justify-end items-center">
+                                <img src="https://png.pngtree.com/png-vector/20240611/ourmid/pngtree-red-motorcycle-motor-bike-isolated-3d-png-image_12653509.png" 
+                                     alt="[Gambar motor sport merah dengan latar belakang transparan]" 
+                                     class="w-full max-w-sm md:max-w-md lg:max-w-lg transform hover:scale-105 transition-transform duration-500 drop-shadow-[0_25px_25px_rgba(0,0,0,0.5)]"
+                                     onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/ef4444?text=Motor+Keren';">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="fitur" class="py-20 bg-gray-800">
+                    <div class="container mx-auto px-6">
+                        <div class="text-center mb-12">
+                            <h2 class="text-4xl font-bold text-white">Solusi Lengkap untuk Motor Anda</h2>
+                            <p class="text-gray-400 mt-2">Fitur canggih yang dirancang untuk kemudahan Anda.</p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            <div class="bg-gray-900 p-8 rounded-xl shadow-lg hover:shadow-red-500/20 transform hover:-translate-y-2 transition-all duration-300">
+                                <div class="text-red-500 mb-4 h-12 w-12"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-full h-full"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336-4.5 4.5 0 00-6.336-4.486c-.201 1.02.434 2.223 1.05 2.872l-1.554 1.554a3.375 3.375 0 00-2.872 1.05l-2.872 2.872a3.375 3.375 0 001.05 2.872z" /></svg></div>
+                                <h3 class="text-xl font-bold text-white mb-2">Analisis Masalah AI</h3>
+                                <p class="text-gray-400">Jelaskan gejala kerusakan motor Anda dan dapatkan analisis awal.</p>
+                            </div>
+                            <div class="bg-gray-900 p-8 rounded-xl shadow-lg hover:shadow-red-500/20 transform hover:-translate-y-2 transition-all duration-300">
+                                <div class="text-red-500 mb-4 h-12 w-12"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-full h-full"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l-1.5 1.5-1.5-1.5" /></svg></div>
+                                <h3 class="text-xl font-bold text-white mb-2">Bengkel Real-time</h3>
+                                <p class="text-gray-400">Temukan bengkel terpercaya di sekitar Anda via Google Maps.</p>
+                            </div>
+                            <div class="bg-gray-900 p-8 rounded-xl shadow-lg hover:shadow-red-500/20 transform hover:-translate-y-2 transition-all duration-300">
+                                <div class="text-red-500 mb-4 h-12 w-12"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-full h-full"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M12 14.25h.008v.008H12v-.008z" /></svg></div>
+                                <h3 class="text-xl font-bold text-white mb-2">Pengingat Servis AI</h3>
+                                <p class="text-gray-400">Dapatkan jadwal perawatan yang dipersonalisasi oleh AI.</p>
+                            </div>
+                            <div class="bg-gray-900 p-8 rounded-xl shadow-lg hover:shadow-red-500/20 transform hover:-translate-y-2 transition-all duration-300">
+                                <div class="text-red-500 mb-4 h-12 w-12"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-full h-full"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a5.25 5.25 0 016.385 4.823a5.25 5.25 0 01-1.16 3.165l-3.32 3.319a.75.75 0 01-1.06 0l-3.32-3.319a5.25 5.25 0 01-1.16-3.165A5.25 5.25 0 0112 6.75z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a8.25 8.25 0 01-8.25-8.25c0-2.399 1.01-4.636 2.698-6.173M21.75 12.75A8.25 8.25 0 0012 4.5" /></svg></div>
+                                <h3 class="text-xl font-bold text-white mb-2">Saran Modifikasi</h3>
+                                <p class="text-gray-400">Dapatkan rekomendasi modifikasi dari AI.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="layanan" class="py-20 bg-gray-900">
+                    <div class="container mx-auto px-6">
+                        <div class="text-center mb-12">
+                            <h2 class="text-4xl font-bold text-white">Pusat Layanan AutoCare</h2>
+                            <p class="text-gray-400 mt-2">Pilih layanan yang Anda butuhkan.</p>
+                        </div>
+                        <div class="flex flex-wrap justify-center gap-2 mb-8 border-b border-gray-700">
+                            <button data-tab="analisis" class="tab-btn py-3 px-6 font-semibold bg-gray-800 hover:bg-gray-700 rounded-t-lg active-tab"><i class="fas fa-comment-dots mr-2"></i>Analisis & Modifikasi</button>
+                            <button data-tab="jadwal" class="tab-btn py-3 px-6 font-semibold bg-gray-800 hover:bg-gray-700 rounded-t-lg"><i class="fas fa-calendar-check mr-2"></i>Jadwal Servis</button>
+                            <button data-tab="bengkel" class="tab-btn py-3 px-6 font-semibold bg-gray-800 hover:bg-gray-700 rounded-t-lg"><i class="fas fa-tools mr-2"></i>Cari Bengkel</button>
+                        </div>
+                        <div id="tab-content" class="bg-gray-800 p-4 sm:p-8 rounded-b-xl rounded-tr-xl shadow-2xl min-h-[70vh]">
+                            <div id="analisis-content" class="tab-pane active"><div class="flex flex-col h-[60vh] bg-gray-900 rounded-lg shadow-inner"><div id="chat-window" class="flex-1 p-6 space-y-4 overflow-y-auto"><div class="chat-bubble ai"><p>Halo! Saya asisten mekanik AutoCare. Jelaskan keluhan motor Anda atau tanyakan tentang modifikasi, dan saya akan bantu menganalisisnya.</p></div></div><div class="p-4 bg-gray-800/50 border-t border-gray-700"><div class="flex items-center gap-4"><input type="text" id="chat-input" placeholder="Ketik pesan Anda di sini..." class="flex-1 bg-gray-700 text-white rounded-full py-3 px-6 focus:outline-none focus:ring-2 focus:ring-red-500"><button id="send-btn" class="bg-red-600 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-red-700 transition"><i class="fas fa-paper-plane"></i></button></div></div></div></div>
+                            <div id="jadwal-content" class="tab-pane hidden"><div class="grid lg:grid-cols-2 gap-8"><div class="bg-gray-900 p-6 rounded-lg"><h3 class="text-2xl font-bold text-white mb-4">Tambahkan Motormu</h3><form id="add-motorcycle-form" class="space-y-4"><input type="text" id="motor-make" placeholder="Merek (Contoh: Honda)" required class="w-full bg-gray-700 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"><input type="text" id="motor-model" placeholder="Model (Contoh: Vario 150)" required class="w-full bg-gray-700 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"><input type="number" id="motor-year" placeholder="Tahun (Contoh: 2022)" required class="w-full bg-gray-700 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"><button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-md transition"><i class="fas fa-plus-circle mr-2"></i>Simpan Motor</button></form></div><div class="bg-gray-900 p-6 rounded-lg"><h3 class="text-2xl font-bold text-white mb-4">Garasi Anda</h3><div id="motorcycle-list" class="space-y-3 max-h-[40vh] overflow-y-auto"><p class="text-gray-400">Belum ada motor yang ditambahkan.</p></div></div></div></div>
+                            <div id="bengkel-content" class="tab-pane hidden">
+                                <div class="mb-6 p-4 bg-white rounded-lg shadow-md flex flex-col sm:flex-row gap-4 items-center">
+                                    <input type="text" id="origin-input" placeholder="Masukkan lokasi awal Anda" class="flex-grow bg-gray-100 text-gray-800 px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <input type="text" id="destination-input" placeholder="Masukkan lokasi tujuan (bengkel)" class="flex-grow bg-gray-100 text-gray-800 px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <button id="get-route-btn" class="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-md transition-all shadow-lg">
+                                        Dapatkan Rute
+                                    </button>
+                                </div>
+                                <div class="grid lg:grid-cols-2 gap-8 items-start mt-8">
+                                    <div class="w-full"><div id="map"><div class="w-full h-full flex items-center justify-center"><p class="text-gray-400">Peta akan muncul di sini...</p></div></div></div>
+                                    <div id="workshop-results" class="w-full max-h-[400px] overflow-y-auto space-y-4 pr-2"><div class="w-full h-full flex items-center justify-center"><p class="text-gray-400">Informasi rute akan muncul di sini...</p></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Kontak Section -->
+                <section id="kontak" class="py-20 bg-gray-800">
+                    <div class="container mx-auto px-6 text-center">
+                        <h2 class="text-4xl font-bold text-white mb-4">Hubungi Kami</h2>
+                        <p class="text-gray-400 mb-8">Punya pertanyaan atau masukan? Kami siap membantu.</p>
+                        <div class="max-w-4xl mx-auto bg-gray-900 rounded-xl shadow-lg p-8 grid md:grid-cols-2 gap-8 items-center">
+                            <div class="text-left space-y-4">
+                                <h3 class="text-2xl font-bold text-white">Informasi Kontak</h3>
+                                <p class="flex items-center"><i class="fas fa-map-marker-alt w-6 text-center mr-3 text-red-400"></i> Jl. Ketintang Barat, Surabaya</p>
+                                <p class="flex items-center"><i class="fas fa-phone w-6 text-center mr-3 text-red-400"></i> (031) 123-4567</p>
+                                <p class="flex items-center"><i class="fas fa-envelope w-6 text-center mr-3 text-red-400"></i> contact@autocare.id</p>
+                            </div>
+                            <div>
+                                <form id="contact-form" class="space-y-4">
+                                    <input type="text" id="contact-name" placeholder="Nama Anda" required class="w-full bg-gray-700 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <input type="email" id="contact-email" placeholder="Email Anda" required class="w-full bg-gray-700 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <textarea id="contact-message" rows="4" placeholder="Pesan Anda..." required class="w-full bg-gray-700 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
+                                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-md transition">
+                                        Kirim Pesan
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="bg-gray-900 border-t border-gray-800">
+            <div class="container mx-auto px-6 py-8 text-center text-gray-400">
+                <p>&copy; 2025 AutoCare by PemulaDev</p>
+                 <p id="user-info-footer" class="text-xs mt-2 hidden">Login sebagai: <span id="user-email-footer"></span></p>
+            </div>
+        </footer>
+
+        <!-- Modals -->
+        <div id="service-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+             <!-- Konten Modal Sama -->
+        </div>
+        <div id="ai-plan-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+             <!-- Konten Modal Sama -->
+        </div>
+        <div id="notification-modal" class="fixed top-5 right-5 bg-green-500 text-white py-3 px-6 rounded-lg shadow-xl z-50 transform translate-x-full transition-transform duration-500">
+            <p id="notification-message"></p>
+        </div>
+    </div>
+    
+    <!-- Google Maps API Script -->
+    <script>
+        function initMap() {
+            window.googleMapsApiLoaded = true;
+        }
+    </script>
+    <script async defer src="https://maps.gomaps.pro/maps/api/js?key=AlzaSyV-mOor85JTTIzsOSzhtm0IoOYUM6Fo6Pw&libraries=places&callback=initMap"></script>
+
+    <!-- App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, onSnapshot, collection, updateDoc, arrayUnion, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // IMPORTANT: Replace with your actual Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPmBD7hhDP0XUdTMY4djt8T6APTQM3mCg",
+            authDomain: "autocare-be56c.firebaseapp.com",
+            projectId: "autocare-be56c",
+            storageBucket: "autocare-be56c.appspot.com",
+            messagingSenderId: "586084371713",
+            appId: "1:586084371713:web:89c559ead1cb3644339f00",
+            measurementId: "G-7SX3STCJ2K"
+        };
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let app, db, auth, userId;
+        let userMotorcycles = [];
+        let isSigningUp = false; // --- Penanda untuk proses pendaftaran ---
+
+        if (Object.keys(firebaseConfig).length > 0) {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } else {
+            console.error("Konfigurasi Firebase tidak ditemukan.");
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const authPage = document.getElementById('auth-page');
+            const appWrapper = document.getElementById('app-wrapper');
+            const signinForm = document.getElementById('signin-form');
+            const signupForm = document.getElementById('signup-form');
+            const showSignupBtn = document.getElementById('show-signup');
+            const showSigninBtn = document.getElementById('show-signin');
+            const signinFormContainer = document.getElementById('signin-form-container');
+            const signupFormContainer = document.getElementById('signup-form-container');
+            const userProfileDisplay = document.getElementById('user-profile-display');
+            const signoutBtn = document.getElementById('signout-btn');
+            const signoutBtnMobile = document.getElementById('signout-btn-mobile');
+            const notificationModal = document.getElementById('notification-modal');
+            const notificationMessage = document.getElementById('notification-message');
+
+            function showNotification(message, isError = false) {
+                notificationMessage.textContent = message;
+                notificationModal.classList.remove('bg-green-500', 'bg-red-500');
+                notificationModal.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
+                notificationModal.style.transform = 'translateX(0)';
+                setTimeout(() => { notificationModal.style.transform = 'translateX(120%)'; }, 4000);
+            }
+
+            // --- onAuthStateChanged LOGIC (UPDATED) ---
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // Cek apakah proses pendaftaran sedang berlangsung.
+                    // Jika ya, jangan lakukan apa-apa agar tidak ada kedipan halaman.
+                    if (isSigningUp) {
+                        return;
+                    }
+
+                    // Jika ini login normal, lanjutkan seperti biasa.
+                    userId = user.uid;
+                    authPage.classList.add('hidden');
+                    appWrapper.classList.remove('hidden');
+                    const displayName = user.displayName || user.email;
+                    userProfileDisplay.textContent = `Halo, ${displayName}`;
+                    initializeMainApp();
+                } else {
+                    userId = null;
+                    authPage.classList.remove('hidden');
+                    appWrapper.classList.add('hidden');
+                }
+            });
+
+            // --- SIGN UP LOGIC (UPDATED) ---
+            signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                isSigningUp = true; // 1. Set penanda bahwa proses sign up sedang berjalan
+
+                const name = document.getElementById('signup-name').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const signupButton = signupForm.querySelector('button[type="submit"]');
+
+                if (password.length < 6) {
+                    showNotification("Password harus terdiri dari minimal 6 karakter.", true);
+                    isSigningUp = false; // Reset penanda jika ada error
+                    return;
+                }
+                
+                signupButton.disabled = true;
+                signupButton.textContent = 'Mendaftar...';
+
+                createUserWithEmailAndPassword(auth, email, password)
+                    .then((userCredential) => {
+                        return updateProfile(userCredential.user, { displayName: name });
+                    })
+                    .then(() => {
+                        return signOut(auth); // 2. Log out pengguna
+                    })
+                    .then(() => {
+                        // 3. Tampilkan notifikasi dan alihkan form
+                        showNotification(`Pendaftaran berhasil! Silakan login untuk melanjutkan.`, false);
+                        
+                        signupFormContainer.classList.add('hidden');
+                        signinFormContainer.classList.remove('hidden');
+                        
+                        document.getElementById('signin-email').value = email;
+                        document.getElementById('signin-password').value = '';
+                        signupForm.reset();
+                    })
+                    .catch((error) => {
+                        let friendlyMessage = "Terjadi kesalahan pendaftaran. Silakan coba lagi.";
+                        if (error.code === 'auth/email-already-in-use') {
+                            friendlyMessage = "Email ini sudah terdaftar. Silakan login atau gunakan email lain.";
+                        }
+                        showNotification(friendlyMessage, true);
+                        console.error("Signup Error:", error);
+                    })
+                    .finally(() => {
+                        // 4. Reset penanda setelah proses selesai, baik berhasil maupun gagal
+                        isSigningUp = false; 
+                        signupButton.disabled = false;
+                        signupButton.textContent = 'Sign Up';
+                    });
+            });
+
+            // --- SIGN IN LOGIC (NO CHANGE) ---
+            signinForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signin-email').value;
+                const password = document.getElementById('signin-password').value;
+                signInWithEmailAndPassword(auth, email, password)
+                    .then((userCredential) => {
+                        showNotification('Login berhasil!', false);
+                    })
+                    .catch((error) => {
+                        showNotification("Email atau password salah.", true);
+                    });
+            });
+            
+            const handleSignOut = () => {
+                signOut(auth).catch((error) => { showNotification('Gagal sign out: ' + error.message, true); });
+            };
+            
+            signoutBtn.addEventListener('click', handleSignOut);
+            signoutBtnMobile.addEventListener('click', handleSignOut);
+
+            showSignupBtn.addEventListener('click', () => {
+                signinFormContainer.classList.add('hidden');
+                signupFormContainer.classList.remove('hidden');
+            });
+
+            showSigninBtn.addEventListener('click', () => {
+                signupFormContainer.classList.add('hidden');
+                signinFormContainer.classList.remove('hidden');
+            });
+
+            // --- ALL OTHER FUNCTIONS (NO CHANGE) ---
+            function initializeMainApp() {
+                const mobileMenuButton = document.getElementById('mobile-menu-button');
+                const mobileMenu = document.getElementById('mobile-menu');
+                const tabButtons = document.querySelectorAll('.tab-btn');
+                const tabPanes = document.querySelectorAll('.tab-pane');
+                const chatWindow = document.getElementById('chat-window');
+                const chatInput = document.getElementById('chat-input');
+                const sendBtn = document.getElementById('send-btn');
+                const addMotorcycleForm = document.getElementById('add-motorcycle-form');
+                const motorcycleList = document.getElementById('motorcycle-list');
+                const getRouteBtn = document.getElementById('get-route-btn');
+                const originInput = document.getElementById('origin-input');
+                const destinationInput = document.getElementById('destination-input');
+                const workshopResults = document.getElementById('workshop-results');
+                const contactForm = document.getElementById('contact-form');
+                
+                let chatHistory = [{ role: "user", parts: [{ text: "Anda adalah asisten mekanik motor virtual bernama AutoCare. Anda sangat ahli dalam menganalisis masalah motor berdasarkan deskripsi pengguna dan memberikan rekomendasi modifikasi. Selalu jawab dalam Bahasa Indonesia yang ramah dan mudah dimengerti." }] }];
+                
+                let map;
+                let directionsService;
+                let directionsRenderer;
+                
+                mobileMenuButton.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+            
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        tabButtons.forEach(btn => btn.classList.remove('active-tab'));
+                        tabPanes.forEach(pane => pane.classList.add('hidden'));
+                        button.classList.add('active-tab');
+                        const tabId = button.getAttribute('data-tab');
+                        document.getElementById(`${tabId}-content`).classList.remove('hidden');
+                        if (tabId === 'bengkel' && !map) {
+                            if (window.googleMapsApiLoaded) {
+                                initMapOnTabSwitch();
+                            }
+                        }
+                    });
+                });
+            
+                addMotorcycleForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (!userId) { showNotification("Anda harus login untuk menambahkan motor.", true); return; }
+                    const make = document.getElementById('motor-make').value;
+                    const model = document.getElementById('motor-model').value;
+                    const year = document.getElementById('motor-year').value;
+                    try {
+                        const collectionPath = `artifacts/${appId}/users/${userId}/motorcycles`;
+                        await addDoc(collection(db, collectionPath), { make, model, year, serviceHistory: [] });
+                        showNotification("Motor berhasil ditambahkan!");
+                        addMotorcycleForm.reset();
+                    } catch (error) { showNotification("Gagal menambahkan motor.", true); }
+                });
+
+                getRouteBtn.addEventListener('click', () => {
+                    if (window.googleMapsApiLoaded) {
+                         calculateAndDisplayRoute(originInput.value, destinationInput.value);
+                    } else {
+                        showNotification("Peta belum siap. Coba beberapa saat lagi.", true);
+                    }
+                });
+
+                contactForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('contact-name').value;
+                    showNotification(`Terima kasih, ${name}! Pesan Anda telah kami terima.`, false);
+                    contactForm.reset();
+                });
+                
+                async function handleSendMessage() {
+                    const userMessage = chatInput.value.trim();
+                    if (!userMessage) return;
+
+                    addMessageToChat(userMessage, 'user');
+                    chatInput.value = '';
+                    sendBtn.disabled = true;
+                    addMessageToChat('AI sedang berpikir...', 'ai', true);
+
+                    let finalPrompt = userMessage;
+                    if (userMotorcycles.length > 0) {
+                        const motorInfo = userMotorcycles.map(m => `${m.make} ${m.model} ${m.year}`).join(', ');
+                        finalPrompt = `(Konteks: Motor saya adalah ${motorInfo}).\n\nPertanyaan saya: ${userMessage}`;
+                    }
+
+                    let localChatHistory = [...chatHistory, { role: "user", parts: [{ text: finalPrompt }] }];
+
+                    try {
+                        const payload = { contents: localChatHistory };
+                        const apiKey = "AIzaSyAOQCFemsSr3ipBMjHTFL-W5eNmB2CyQuQ"; // API Key will be injected by the environment
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        const result = await response.json();
+                        
+                        document.getElementById('thinking-bubble')?.remove();
+
+                        if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                            const aiResponse = result.candidates[0].content.parts[0].text;
+                            addMessageToChat(aiResponse, 'ai');
+                            chatHistory.push({ role: "user", parts: [{ text: finalPrompt }] }, { role: "model", parts: [{ text: aiResponse }] });
+                        } else {
+                            addMessageToChat('Maaf, saya sedang mengalami gangguan. Coba lagi nanti.', 'ai');
+                        }
+                    } catch (error) {
+                        document.getElementById('thinking-bubble')?.remove();
+                        addMessageToChat('Terjadi kesalahan saat menghubungi AI. Periksa koneksi Anda.', 'ai');
+                    } finally {
+                        sendBtn.disabled = false;
+                    }
+                }
+
+                function addMessageToChat(message, sender, isThinking = false) {
+                    const bubble = document.createElement('div');
+                    bubble.className = `chat-bubble p-4 rounded-2xl ${sender}`;
+                    bubble.innerHTML = `<p>${message.replace(/\n/g, '<br>')}</p>`;
+                    if (isThinking) { bubble.id = 'thinking-bubble'; bubble.innerHTML = `<div class="flex items-center gap-2"><div class="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div><div class="w-2 h-2 bg-red-400 rounded-full animate-pulse delay-75"></div><div class="w-2 h-2 bg-red-400 rounded-full animate-pulse delay-150"></div></div>`}
+                    chatWindow.appendChild(bubble);
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                }
+                
+                sendBtn.addEventListener('click', handleSendMessage);
+                chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSendMessage(); });
+                
+                function initMapOnTabSwitch() {
+                    if (map) return; // Already initialized
+                    const mapContainer = document.getElementById('map');
+                    if (!mapContainer || mapContainer.childElementCount > 1) { // Check if it's already initialized or has error message
+                        mapContainer.innerHTML = ''; // Clear any placeholder text
+                    }
+                    map = new google.maps.Map(mapContainer, {
+                        center: { lat: -6.2088, lng: 106.8456 }, // Jakarta
+                        zoom: 11,
+                        styles: [ { elementType: "geometry", stylers: [{ color: "#242f3e" }] }, { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] }, { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] }, { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] }, { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] }, { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#263c3f" }] }, { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] }, { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] }, { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] }, { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] }, { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] }, { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] }, { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] }, { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] }, { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] }, { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }, { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] }, { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] } ]
+                    });
+                    
+                    directionsService = new google.maps.DirectionsService();
+                    directionsRenderer = new google.maps.DirectionsRenderer();
+                    directionsRenderer.setMap(map);
+                }
+                
+                function calculateAndDisplayRoute(origin, destination) {
+                    if (!origin || !destination) {
+                        showNotification("Harap isi lokasi awal dan tujuan.", true);
+                        return;
+                    }
+                    
+                    directionsService.route({
+                        origin: origin,
+                        destination: destination,
+                        travelMode: google.maps.TravelMode.DRIVING
+                    }, (response, status) => {
+                        if (status === 'OK') {
+                            directionsRenderer.setDirections(response);
+                            const route = response.routes[0].legs[0];
+                            workshopResults.innerHTML = `
+                                <div class="bg-gray-900 p-4 rounded-lg">
+                                    <h4 class="font-bold text-lg text-white">Detail Rute</h4>
+                                    <p class="text-sm text-gray-400 mt-2"><strong>Dari:</strong> ${route.start_address}</p>
+                                    <p class="text-sm text-gray-400"><strong>Ke:</strong> ${route.end_address}</p>
+                                    <p class="text-lg text-white mt-3"><strong>Jarak:</strong> ${route.distance.text}</p>
+                                    <p class="text-lg text-white"><strong>Waktu:</strong> ${route.duration.text}</p>
+                                </div>
+                            `;
+                        } else {
+                            showNotification('Permintaan rute gagal: ' + status, true);
+                            workshopResults.innerHTML = `<p class="text-red-400">Tidak dapat menemukan rute. Pastikan lokasi yang dimasukkan valid.</p>`;
+                        }
+                    });
+                }
+                
+                function loadMotorcycles() {
+                    if(!userId) return;
+                    const motorcycleList = document.getElementById('motorcycle-list');
+                    const collectionPath = `artifacts/${appId}/users/${userId}/motorcycles`;
+                    onSnapshot(collection(db, collectionPath), (snapshot) => {
+                        userMotorcycles = [];
+                        motorcycleList.innerHTML = '';
+                        if (snapshot.empty) {
+                            motorcycleList.innerHTML = '<p class="text-gray-400">Belum ada motor yang ditambahkan.</p>';
+                            return;
+                        }
+                        snapshot.forEach(doc => {
+                            const motor = doc.data();
+                            motor.id = doc.id;
+                            userMotorcycles.push(motor);
+
+                            const motorEl = document.createElement('div');
+                            motorEl.className = 'bg-gray-800 p-4 rounded-lg';
+                            motorEl.innerHTML = `
+                                <div class="flex justify-between items-start">
+                                     <div class="flex items-center">
+                                         <i class="fas fa-motorcycle text-red-400 mr-4"></i>
+                                         <div>
+                                             <p class="font-bold text-white">${motor.make} ${motor.model}</p>
+                                             <p class="text-sm text-gray-400">${motor.year}</p>
+                                         </div>
+                                     </div>
+                                </div>
+                            `;
+                            motorcycleList.appendChild(motorEl);
+                        });
+                    });
+                }
+
+                loadMotorcycles();
+            }
+        });
+    </script>
+</body>
+</html>
